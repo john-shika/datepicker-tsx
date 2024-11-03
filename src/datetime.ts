@@ -831,6 +831,22 @@ function createDateTimeSeed(years: number, months: number, days: number, hours: 
     };
 }
 
+function createDateTimeSnapShotSeed(dateTimeSnapShot: DateTimeSnapShotImpl): DateTimeSeed {
+    const years = dateTimeSnapShot.dateTimeReadOnly.years;
+    const months = dateTimeSnapShot.dateTimeReadOnly.months;
+    const days = dateTimeSnapShot.dateTimeReadOnly.days;
+    const hours = dateTimeSnapShot.dateTimeReadOnly.hours;
+    const minutes = dateTimeSnapShot.dateTimeReadOnly.minutes;
+    const seconds = dateTimeSnapShot.dateTimeReadOnly.seconds;
+    const ms = dateTimeSnapShot.dateTimeReadOnly.ms;
+    const us = dateTimeSnapShot.dateTimeReadOnly.us;
+    const ns = dateTimeSnapShot.dateTimeReadOnly.ns;
+    const weekday = dateTimeSnapShot.dateTimeReadOnly.weekday;
+    const timeZone = dateTimeSnapShot.dateTimeReadOnly.timeZone;
+
+    return createDateTimeSeed(years, months, days, hours, minutes, seconds, ms, us, ns, weekday, timeZone);
+}
+
 function yearsNext(dateTimeSeed: DateTimeSeed, updateWeekday: boolean = true): DateTimeSeed {
     if (updateWeekday) {
         const days = getDaysInYear(dateTimeSeed.years + 1);
@@ -1252,21 +1268,9 @@ export function getDateTimeReadOnlyByTimestamp(timestamp: TimestampImpl): DateTi
     const index = arr.indexOf(val);
     if (index === -1) throw new Error("getNearestDateTimeSnapShot() failed.");
     const dateTimeSnapShot = dateTimeSnapShots[index];
-
-    let years = dateTimeSnapShot.dateTimeReadOnly.years;
-    let months = dateTimeSnapShot.dateTimeReadOnly.months;
-    let days = dateTimeSnapShot.dateTimeReadOnly.days;
-    let hours = dateTimeSnapShot.dateTimeReadOnly.hours;
-    let minutes = dateTimeSnapShot.dateTimeReadOnly.minutes;
-    let seconds = dateTimeSnapShot.dateTimeReadOnly.seconds;
-    let ms = dateTimeSnapShot.dateTimeReadOnly.ms;
-    let us = dateTimeSnapShot.dateTimeReadOnly.us;
-    let ns = dateTimeSnapShot.dateTimeReadOnly.ns;
-
-    let weekday = dateTimeSnapShot.dateTimeReadOnly.weekday;
     const timeZone = dateTimeSnapShot.dateTimeReadOnly.timeZone;
 
-    const dateTimeSeed = createDateTimeSeed(years, months, days, hours, minutes, seconds, ms, us, ns, weekday, dateTimeSnapShot.timestamp);
+    const dateTimeSeed = createDateTimeSnapShotSeed(dateTimeSnapShot);
 
     updateYears(dateTimeSeed, timestamp);
     updateMonths(dateTimeSeed, timestamp);
@@ -1278,16 +1282,16 @@ export function getDateTimeReadOnlyByTimestamp(timestamp: TimestampImpl): DateTi
     updateUs(dateTimeSeed, timestamp);
     updateNs(dateTimeSeed, timestamp);
 
-    years = dateTimeSeed.years;
-    months = dateTimeSeed.months;
-    days = dateTimeSeed.days;
-    hours = dateTimeSeed.hours;
-    minutes = dateTimeSeed.minutes;
-    seconds = dateTimeSeed.seconds;
-    ms = dateTimeSeed.ms;
-    us = dateTimeSeed.us;
-    ns = dateTimeSeed.ns;
-    weekday = dateTimeSeed.weekday;
+    const years = dateTimeSeed.years;
+    const months = dateTimeSeed.months;
+    const days = dateTimeSeed.days;
+    const hours = dateTimeSeed.hours;
+    const minutes = dateTimeSeed.minutes;
+    const seconds = dateTimeSeed.seconds;
+    const ms = dateTimeSeed.ms;
+    const us = dateTimeSeed.us;
+    const ns = dateTimeSeed.ns;
+    const weekday = dateTimeSeed.weekday;
 
     return new DateTimeReadOnly(years, months, days, hours, minutes, seconds, ms, us, ns, weekday, timeZone);
 }
