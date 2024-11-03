@@ -842,9 +842,9 @@ function createDateTimeSnapShotSeed(dateTimeSnapShot: DateTimeSnapShotImpl): Dat
     const us = dateTimeSnapShot.dateTimeReadOnly.us;
     const ns = dateTimeSnapShot.dateTimeReadOnly.ns;
     const weekday = dateTimeSnapShot.dateTimeReadOnly.weekday;
-    const timeZone = dateTimeSnapShot.dateTimeReadOnly.timeZone;
+    const timestamp = dateTimeSnapShot.timestamp;
 
-    return createDateTimeSeed(years, months, days, hours, minutes, seconds, ms, us, ns, weekday, timeZone);
+    return createDateTimeSeed(years, months, days, hours, minutes, seconds, ms, us, ns, weekday, timestamp);
 }
 
 function yearsNext(dateTimeSeed: DateTimeSeed, updateWeekday: boolean = true): DateTimeSeed {
