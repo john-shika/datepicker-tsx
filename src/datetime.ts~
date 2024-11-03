@@ -577,7 +577,7 @@ export class DateTimeReadOnly implements DateTimeReadOnlyImpl {
         if (!isDateTimeReadOnly(other)) throw new Error("Value is not a DateTimeReadOnly");
 
         // TODO: compare timezones
-
+        
         if (this.years > other.years) return 1;
         if (this.years < other.years) return -1;
         if (this.months > other.months) return 1;
