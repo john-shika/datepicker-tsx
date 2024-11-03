@@ -229,7 +229,7 @@ months.toString = (m: Months): string => {
 };
 
 months.parse = (s: string): Months => {
-    switch (s.toLowerCase()) {
+    switch (s.trim().toLowerCase()) {
         case "jan":
         case "january": return Months.January;
         case "feb":
@@ -324,7 +324,7 @@ timeZones.toString = (tz: TimeZones): string => {
 };
 
 timeZones.parse = (s: string): TimeZones => {
-    switch (s.toLowerCase()) {
+    switch (s.trim().toLowerCase()) {
         case "utc":
         case "zulu":
         case "gmt":
@@ -579,70 +579,12 @@ export class DateTimeReadOnly implements DateTimeReadOnlyImpl {
         // TODO: compare timezones
 
         // years
-        if (this.years > other.years) {
-            return 1;
-        } else if (this.years < other.years) {
-            return -1;
-        }
+        if (this.years > other.years) return 1;
+        if (this.years < other.years) return -1;
+        if (this.months > other.months) return 1;
+        if (this.months < other.months) return -1;
 
-        // months
-        if (this.months > other.months) {
-            return 1;
-        } else if (this.months < other.months) {
-            return -1;
-        }
-
-        // days
-        if (this.days > other.days) {
-            return 1;
-        } else if (this.days < other.days) {
-            return -1;
-        }
-
-        // hours
-        if (this.hours > other.hours) {
-            return 1;
-        } else if (this.hours < other.hours) {
-            return -1;
-        }
-
-        // minutes
-        if (this.minutes > other.minutes) {
-            return 1;
-        } else if (this.minutes < other.minutes) {
-            return -1;
-        }
-
-        // seconds
-        if (this.seconds > other.seconds) {
-            return 1;
-        } else if (this.seconds < other.seconds) {
-            return -1;
-        }
-
-        // milliseconds
-        if (this.ms > other.ms) {
-            return 1;
-        } else if (this.ms < other.ms) {
-            return -1;
-        }
-
-        // microseconds
-        if (this.us > other.us) {
-            return 1;
-        } else if (this.us < other.us) {
-            return -1;
-        }
-
-        // nanoseconds
-        if (this.ns > other.ns) {
-            return 1;
-        } else if (this.ns < other.ns) {
-            return -1;
-        }
-
-        // equals
-        return 0;
+        return TimeSpan.prototype.compareTo.apply(this, [other as unknown as TimeSpanImpl]);
     }
 
     public equals(other: DateTimeReadOnlyImpl): boolean {
