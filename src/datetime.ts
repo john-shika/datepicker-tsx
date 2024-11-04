@@ -1651,27 +1651,33 @@ function addMs(dateTimeSeed: DateTimeSeed, ms: number): DateTimeSeed {
 }
 
 function usNext(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boolean = true): DateTimeSeed {
-    if (updateWeekdayAndTimestamp) dateTimeSeed.timestampExtended.ns += MICROSECOND_IN_NANOSECONDS;
-    const timestampExtended = dateTimeSeed.timestampExtended.copy();
+    if (updateWeekdayAndTimestamp) {
+        dateTimeSeed.timestampExtended.ns += MICROSECOND_IN_NANOSECONDS;
+        dateTimeSeed.timestampExtended.ns %= MILLISECOND_IN_NANOSECONDS;
+    }
+    // const timestampExtended = dateTimeSeed.timestampExtended.copy();
     if (dateTimeSeed.us < 999) {
         dateTimeSeed.us += 1;
         return dateTimeSeed;
     }
-    msNext(dateTimeSeed); // update weekday
-    dateTimeSeed.timestampExtended.assign(timestampExtended); // revert timestamp
+    msNext(dateTimeSeed); // update weekday and timestamp (ms)
+    // dateTimeSeed.timestampExtended.assign(timestampExtended); // revert timestamp
     dateTimeSeed.us = 0;
     return dateTimeSeed;
 }
 
 function usPrev(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boolean = true): DateTimeSeed {
-    if (updateWeekdayAndTimestamp) dateTimeSeed.timestampExtended.ns -= MICROSECOND_IN_NANOSECONDS;
-    const timestampExtended = dateTimeSeed.timestampExtended.copy();
+    if (updateWeekdayAndTimestamp) {
+        dateTimeSeed.timestampExtended.ns -= MICROSECOND_IN_NANOSECONDS;
+        dateTimeSeed.timestampExtended.ns %= MILLISECOND_IN_NANOSECONDS;
+    }
+    // const timestampExtended = dateTimeSeed.timestampExtended.copy();
     if (dateTimeSeed.us > 0) {
         dateTimeSeed.us -= 1;
         return dateTimeSeed;
     }
-    msPrev(dateTimeSeed); // update weekday
-    dateTimeSeed.timestampExtended.assign(timestampExtended); // revert timestamp
+    msPrev(dateTimeSeed); // update weekday and timestamp (ms)
+    // dateTimeSeed.timestampExtended.assign(timestampExtended); // revert timestamp
     dateTimeSeed.us = 999;
     return dateTimeSeed;
 }
@@ -1719,7 +1725,10 @@ function addUs(dateTimeSeed: DateTimeSeed, us: number): DateTimeSeed {
 }
 
 function nsNext(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boolean = true): DateTimeSeed {
-    if (updateWeekdayAndTimestamp) dateTimeSeed.timestampExtended.ns += 1;
+    if (updateWeekdayAndTimestamp) {
+        dateTimeSeed.timestampExtended.ns += 1;
+        dateTimeSeed.timestampExtended.ns %= MILLISECOND_IN_NANOSECONDS;
+    }
     const timestampExtended = dateTimeSeed.timestampExtended.copy();
     if (dateTimeSeed.ns < 999) {
         dateTimeSeed.ns += 1;
@@ -1732,7 +1741,10 @@ function nsNext(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boolean =
 }
 
 function nsPrev(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boolean = true): DateTimeSeed {
-    if (updateWeekdayAndTimestamp) dateTimeSeed.timestampExtended.ns -= 1;
+    if (updateWeekdayAndTimestamp) {
+        dateTimeSeed.timestampExtended.ns -= 1;
+        dateTimeSeed.timestampExtended.ns %= MILLISECOND_IN_NANOSECONDS;
+    }
     const timestampExtended = dateTimeSeed.timestampExtended.copy();
     if (dateTimeSeed.ns > 0) {
         dateTimeSeed.ns -= 1;
@@ -2173,6 +2185,7 @@ function main() {
     addHours(dateTimeSeed, 120);
     // addHours(dateTimeSeed, -120);
     // addMonths(dateTimeSeed, 12);
+    addNs(dateTimeSeed, 2147483648);
     console.log(dateTimeSeed);
 }
 
