@@ -1493,7 +1493,7 @@ function addNs(dateTimeSeed: DateTimeSeed, ns: number): DateTimeSeed {
     return dateTimeSeed;
 }
 
-export function getDateTimeReadOnlyByTimestamp(timestampExtended: TimestampExtended): DateTimeReadOnlyImpl {
+export function getDateTimeReadOnlyByTimestampExtended(timestampExtended: TimestampExtended): DateTimeReadOnlyImpl {
     if (dateTimeSnapShots.length === 0) throw new Error("getDateTimeReadOnlyByTimestamp() requires at least one DateTimeSnapShot.");
 
     // find multiple nearest datetime snapshots
@@ -1874,7 +1874,7 @@ function main() {
     const date = new Date('2019-12-31T15:20:52.658Z');
     console.log(date.getTime())
 
-    const dateTimeReadOnly = getDateTimeReadOnlyByTimestamp(timestampExtended);
+    const dateTimeReadOnly = getDateTimeReadOnlyByTimestampExtended(timestampExtended);
     console.log(dateTimeReadOnly);
 
     const dateTimeSeed = dateTimeReadOnly.dateTimeSeed;
