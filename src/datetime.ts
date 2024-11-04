@@ -1,6 +1,6 @@
 /*
 * @name: datetime.ts
-* @author: <ahmadasysyafiq@proton.me/>
+* @author: <ahmadasysyafiq@proton.me>
 * @description: datetime manipulating system supported by skfw.net
 * @timezone: Asia/Jakarta
 * @locale: en-US, id-ID
@@ -1557,18 +1557,18 @@ export function getDateTimeReadOnlyByTimestampExtended(timestampExtended: Timest
     return new DateTimeReadOnly(years, months, days, hours, minutes, seconds, ms, us, ns, weekday, timeZone);
 }
 
-export function getNearestDateTimeSnapShot(dateTime: DateTimeReadOnlyImpl): NearestDateTimeSnapShotImpl {
+export function getNearestDateTimeSnapShot(dateTimeReadOnly: DateTimeReadOnlyImpl): NearestDateTimeSnapShotImpl {
     if (dateTimeSnapShots.length === 0) throw new Error("getNearestDateTimeSnapShot() requires at least one DateTimeSnapShot.");
 
     // find multiple nearest datetime snapshots
     let arr: number[] = [];
     for (let i = 0; i < dateTimeSnapShots.length; i++) {
         const dateTimeSnapShot = dateTimeSnapShots[i];
-        const years = dateTime.years - dateTimeSnapShot.dateTimeReadOnly.years;
+        const years = dateTimeReadOnly.years - dateTimeSnapShot.dateTimeReadOnly.years;
         arr.push(years);
 
         // break if found
-        if (i === 0 && dateTime.years >= dateTimeSnapShot.dateTimeReadOnly.years) break;
+        if (i === 0 && dateTimeReadOnly.years >= dateTimeSnapShot.dateTimeReadOnly.years) break;
         if (Math.abs(years) <= 5) break;
     }
 
@@ -1617,7 +1617,7 @@ export function getNearestDateTimeSnapShot(dateTime: DateTimeReadOnlyImpl): Near
         }
     }
 
-    while (months < dateTime.months) {
+    while (months < dateTimeReadOnly.months) {
         const days = getDaysInMonth(years, months);
         timeSpan.days += days;
         if (months < 12) {
@@ -1628,13 +1628,13 @@ export function getNearestDateTimeSnapShot(dateTime: DateTimeReadOnlyImpl): Near
         }
     }
 
-    if (days < dateTime.days) timeSpan.days += dateTime.days - days;
-    if (hours < dateTime.hours) timeSpan.hours = dateTime.hours - hours;
-    if (minutes < dateTime.minutes) timeSpan.minutes = dateTime.minutes - minutes;
-    if (seconds < dateTime.seconds) timeSpan.seconds = dateTime.seconds - seconds;
-    if (ms < dateTime.ms) timeSpan.ms = dateTime.ms - ms;
-    if (us < dateTime.us) timeSpan.us = dateTime.us - us;
-    if (ns < dateTime.ns) timeSpan.ns = dateTime.ns - ns;
+    if (days < dateTimeReadOnly.days) timeSpan.days += dateTimeReadOnly.days - days;
+    if (hours < dateTimeReadOnly.hours) timeSpan.hours = dateTimeReadOnly.hours - hours;
+    if (minutes < dateTimeReadOnly.minutes) timeSpan.minutes = dateTimeReadOnly.minutes - minutes;
+    if (seconds < dateTimeReadOnly.seconds) timeSpan.seconds = dateTimeReadOnly.seconds - seconds;
+    if (ms < dateTimeReadOnly.ms) timeSpan.ms = dateTimeReadOnly.ms - ms;
+    if (us < dateTimeReadOnly.us) timeSpan.us = dateTimeReadOnly.us - us;
+    if (ns < dateTimeReadOnly.ns) timeSpan.ns = dateTimeReadOnly.ns - ns;
 
     return new NearestDateTimeSnapShot(dateTimeSnapShot, timeSpan);
 }

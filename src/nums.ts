@@ -1,6 +1,6 @@
 /*
 * @name: nums.ts
-* @author: <ahmadasysyafiq@proton.me/>
+* @author: <ahmadasysyafiq@proton.me>
 * @description: numeric system supported by skfw.net
 * @timezone: Asia/Jakarta
 * @locale: en-US, id-ID

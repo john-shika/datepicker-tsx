@@ -1,6 +1,6 @@
 /*
 * @name: utils.ts
-* @author: <ahmadasysyafiq@proton.me/>
+* @author: <ahmadasysyafiq@proton.me>
 * @description: utilities system supported by skfw.net
 * @timezone: Asia/Jakarta
 * @locale: en-US, id-ID
