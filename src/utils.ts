@@ -38,3 +38,51 @@ export function toString(obj: any): string {
     if (typeof obj === "string") return obj;
     return obj.toString();
 }
+
+export interface ModuloTyped {
+    value: number;
+    n: number;
+    valueOf(): number;
+}
+
+export function moduloByIndex(value: number, mod: number): ModuloTyped {
+    let n = 0;
+    while (value < 0) {
+        value += mod;
+        n--;
+    }
+    while (value >= mod) {
+        value -= mod;
+        n++;
+    }
+    return {
+        value,
+        n,
+        valueOf(): number {
+            return this.value;
+        }
+    };
+}
+
+export function moduloByPosition(value: number, mod: number): ModuloTyped {
+    let n = 0;
+    while (value <= 0) {
+        value += mod;
+        n--;
+    }
+    while (value > mod) {
+        value -= mod;
+        n++;
+    }
+    return {
+        value,
+        n,
+        valueOf(): number {
+            return this.value;
+        }
+    };
+}
+
+export function modulo(value: number, mod: number): ModuloTyped {
+    return moduloByIndex(value, mod);
+}
