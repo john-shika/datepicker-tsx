@@ -297,12 +297,12 @@ export function isMonthTyped(value: any): value is MonthTyped {
 
 export enum TimeZones {
     UTC = "UTC",
-    Local = "Asia/Jakarta",
+    // Local = "Asia/Jakarta",
 }
 
 export interface TimeZonesImpl {
     UTC: string;
-    Local: string;
+    // Local: string;
     toString(tz: TimeZones): string;
     parse(s: string): TimeZones;
 }
@@ -320,10 +320,10 @@ timeZones.parse = (s: string): TimeZones => {
         case "zulu":
         case "gmt":
         case "gmt+0": return TimeZones.UTC;
-        case "local":
-        case "gmt+7":
-        case "jakarta":
-        case "asia/jakarta": return TimeZones.Local;
+        // case "local":
+        // case "gmt+7":
+        // case "jakarta":
+        // case "asia/jakarta": return TimeZones.Local;
         default:
             throw new Error(`Invalid timezone: ${s}`);
     }
@@ -333,13 +333,13 @@ export function isTimeZoneTyped(value: any): value is TimeZoneTyped {
     if (typeof value === "string") {
         const values = [
             TimeZones.UTC,
-            TimeZones.Local,
+            // TimeZones.Local,
         ] as string[];
         return values.includes(value);
     }
     const props: Record<keyof TimeZonesImpl, string> = {
         UTC: "string",
-        Local: "string",
+        // Local: "string",
         toString: "function",
         parse: "function",
     };
@@ -535,8 +535,8 @@ export interface DateTimeReadOnlyImpl extends ComparableImpl<DateTimeReadOnlyImp
     readonly ns: number;
     readonly weekday: WeekdayTyped;
     readonly timeZone: TimeZoneTyped;
-    timestampExtended: TimestampExtended;
-    dateTimeSeed: DateTimeSeed;
+    get timestampExtended(): TimestampExtended;
+    get dateTimeSeed(): DateTimeSeed;
 }
 
 export class DateTimeReadOnly implements DateTimeReadOnlyImpl {
@@ -911,6 +911,7 @@ function yearsPrev(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boolea
 }
 
 function yearsNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended): DateTimeSeed {
+    if (dateTimeSeed.timestampExtended.equals(timestampExtended)) return dateTimeSeed;
     // sum years
     while (dateTimeSeed.timestampExtended.ms < timestampExtended.ms) {
         const dateTimeX = yearsNext(dateTimeSeed.copy());
@@ -926,7 +927,8 @@ function yearsNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExten
     return dateTimeSeed;
 }
 
-function addYears(dateTimeSeed: DateTimeSeed, years: number): DateTimeSeed {
+export function addYears(dateTimeSeed: DateTimeSeed, years: number): DateTimeSeed {
+    if (years === 0) return dateTimeSeed;
     while (years > 0) {
         yearsNext(dateTimeSeed);
         years -= 1;
@@ -976,6 +978,7 @@ function monthsPrev(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boole
 }
 
 function monthsNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended): DateTimeSeed {
+    if (dateTimeSeed.timestampExtended.equals(timestampExtended)) return dateTimeSeed;
     // sum months
     while (dateTimeSeed.timestampExtended.ms < timestampExtended.ms) {
         const dateTimeX = monthsNext(dateTimeSeed.copy());
@@ -991,7 +994,8 @@ function monthsNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExte
     return dateTimeSeed;
 }
 
-function addMonths(dateTimeSeed: DateTimeSeed, months: number): DateTimeSeed {
+export function addMonths(dateTimeSeed: DateTimeSeed, months: number): DateTimeSeed {
+    if (months === 0) return dateTimeSeed;
     // if (months > 0) {
     //     const {value, n} = modulo(months, YEAR_IN_MONTHS);
     //     for (let i = 0; i < n; i++) {
@@ -1027,11 +1031,11 @@ function addMonths(dateTimeSeed: DateTimeSeed, months: number): DateTimeSeed {
     while (months < 0) {
         const yearMonths = YEAR_IN_MONTHS;
         if (months > -yearMonths) break;
-        yearsNext(dateTimeSeed);
+        yearsPrev(dateTimeSeed);
         months += yearMonths;
     }
     while (months < 0) {
-        monthsNext(dateTimeSeed);
+        monthsPrev(dateTimeSeed);
         months += 1;
     }
     return dateTimeSeed;
@@ -1063,6 +1067,7 @@ function daysPrev(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boolean
 }
 
 function daysNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended): DateTimeSeed {
+    if (dateTimeSeed.timestampExtended.equals(timestampExtended)) return dateTimeSeed;
     // sum days
     while (dateTimeSeed.timestampExtended.ms < timestampExtended.ms) {
         const dateTimeX = daysNext(dateTimeSeed.copy());
@@ -1078,7 +1083,8 @@ function daysNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtend
     return dateTimeSeed;
 }
 
-function addDays(dateTimeSeed: DateTimeSeed, days: number): DateTimeSeed {
+export function addDays(dateTimeSeed: DateTimeSeed, days: number): DateTimeSeed {
+    if (days === 0) return dateTimeSeed;
     // increase days
     while (days > 0) {
         const yearDays = getYearDays(dateTimeSeed.years);
@@ -1147,11 +1153,12 @@ function hoursPrev(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boolea
 }
 
 function hoursNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended): DateTimeSeed {
+    if (dateTimeSeed.timestampExtended.equals(timestampExtended)) return dateTimeSeed;
     // sum hours
     while (dateTimeSeed.timestampExtended.ms < timestampExtended.ms) {
-        const dataTimeX = hoursNext(dateTimeSeed.copy());
-        if (dataTimeX.timestampExtended.ms > timestampExtended.ms) break;
-        dateTimeSeed.assign(dataTimeX);
+        const dateTimeX = hoursNext(dateTimeSeed.copy());
+        if (dateTimeX.timestampExtended.ms > timestampExtended.ms) break;
+        dateTimeSeed.assign(dateTimeX);
     }
     // subtract hours
     while (dateTimeSeed.timestampExtended.ms > timestampExtended.ms) {
@@ -1162,7 +1169,8 @@ function hoursNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExten
     return dateTimeSeed;
 }
 
-function addHours(dateTimeSeed: DateTimeSeed, hours: number): DateTimeSeed {
+export function addHours(dateTimeSeed: DateTimeSeed, hours: number): DateTimeSeed {
+    if (hours === 0) return dateTimeSeed;
     // if (hours > 0) {
     //     const {value, n} = modulo(hours, DAY_IN_HOURS);
     //     for (let i = 0; i < n; i++) {
@@ -1175,8 +1183,13 @@ function addHours(dateTimeSeed: DateTimeSeed, hours: number): DateTimeSeed {
     //     }
     // }
     while (hours > 0) {
-        const monthDays = getMonthDays(dateTimeSeed.years, dateTimeSeed.months);
-        const monthHours = monthDays * DAY_IN_HOURS;
+        const yearHours = getYearHours(dateTimeSeed.years);
+        if (hours < yearHours) break;
+        yearsNext(dateTimeSeed);
+        hours -= yearHours;
+    }
+    while (hours > 0) {
+        const monthHours = getMonthHours(dateTimeSeed.years, dateTimeSeed.months);
         if (hours < monthHours) break;
         monthsNext(dateTimeSeed);
         hours -= monthHours;
@@ -1203,18 +1216,23 @@ function addHours(dateTimeSeed: DateTimeSeed, hours: number): DateTimeSeed {
     //     }
     // }
     while (hours < 0) {
+        const dateTimeX = yearsPrev(dateTimeSeed.copy());
+        const yearHours = getYearHours(dateTimeX.years);
+        if (hours > -yearHours) break;
+        dateTimeSeed.assign(dateTimeX);
+        hours += yearHours;
+    }
+    while (hours < 0) {
         const dateTimeX = monthsPrev(dateTimeSeed.copy());
-        const monthDays = getMonthDays(dateTimeX.years, dateTimeX.months);
-        const monthHours = monthDays * DAY_IN_HOURS;
+        const monthHours = getMonthHours(dateTimeX.years, dateTimeX.months);
         if (hours > -monthHours) break;
         dateTimeSeed.assign(dateTimeX);
         hours += monthHours;
     }
     while (hours < 0) {
-        const dateTimeX = daysPrev(dateTimeSeed.copy());
         const dayHours = DAY_IN_HOURS;
         if (hours > -dayHours) break;
-        dateTimeSeed.assign(dateTimeX);
+        daysPrev(dateTimeSeed);
         hours += dayHours;
     }
     while (hours < 0) {
@@ -1251,6 +1269,7 @@ function minutesPrev(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: bool
 }
 
 function minutesNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended): DateTimeSeed {
+    if (dateTimeSeed.timestampExtended.equals(timestampExtended)) return dateTimeSeed;
     // sum minutes
     while (dateTimeSeed.timestampExtended.ms < timestampExtended.ms) {
         const dateTimeX = minutesNext(dateTimeSeed.copy());
@@ -1266,7 +1285,8 @@ function minutesNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExt
     return dateTimeSeed;
 }
 
-function addMinutes(dateTimeSeed: DateTimeSeed, minutes: number): DateTimeSeed {
+export function addMinutes(dateTimeSeed: DateTimeSeed, minutes: number): DateTimeSeed {
+    if (minutes === 0) return dateTimeSeed;
     // if (minutes > 0) {
     //     const {value, n} = modulo(minutes, HOUR_IN_MINUTES);
     //     for (let i = 0; i < n; i++) {
@@ -1279,15 +1299,13 @@ function addMinutes(dateTimeSeed: DateTimeSeed, minutes: number): DateTimeSeed {
     //     }
     // }
     while (minutes > 0) {
-        const yearDays = getYearDays(dateTimeSeed.years);
-        const yearMinutes = yearDays * DAY_IN_MINUTES;
+        const yearMinutes = getYearMinutes(dateTimeSeed.years);
         if (minutes < yearMinutes) break;
         yearsNext(dateTimeSeed);
         minutes -= yearMinutes;
     }
     while (minutes > 0) {
-        const monthDays = getMonthDays(dateTimeSeed.years, dateTimeSeed.months);
-        const monthMinutes = monthDays * DAY_IN_MINUTES;
+        const monthMinutes = getMonthMinutes(dateTimeSeed.years, dateTimeSeed.months);
         if (minutes < monthMinutes) break;
         monthsNext(dateTimeSeed);
         minutes -= monthMinutes;
@@ -1321,16 +1339,14 @@ function addMinutes(dateTimeSeed: DateTimeSeed, minutes: number): DateTimeSeed {
     // }
     while (minutes < 0) {
         const dateTimeX = yearsPrev(dateTimeSeed.copy());
-        const yearDays = getYearDays(dateTimeX.years);
-        const yearMinutes = yearDays * DAY_IN_MINUTES;
+        const yearMinutes = getYearMinutes(dateTimeX.years);
         if (minutes > -yearMinutes) break;
         dateTimeSeed.assign(dateTimeX);
         minutes += yearMinutes;
     }
     while (minutes < 0) {
         const dateTimeX = monthsPrev(dateTimeSeed.copy());
-        const monthDays = getMonthDays(dateTimeX.years, dateTimeX.months);
-        const monthMinutes = monthDays * DAY_IN_MINUTES;
+        const monthMinutes = getMonthMinutes(dateTimeX.years, dateTimeX.months);
         if (minutes > -monthMinutes) break;
         dateTimeSeed.assign(dateTimeX);
         minutes += monthMinutes;
@@ -1381,6 +1397,7 @@ function secondsPrev(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: bool
 }
 
 function secondsNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended): DateTimeSeed {
+    if (dateTimeSeed.timestampExtended.equals(timestampExtended)) return dateTimeSeed;
     // sum seconds
     while (dateTimeSeed.timestampExtended.ms < timestampExtended.ms) {
         const dateTimeX = secondsNext(dateTimeSeed.copy());
@@ -1396,7 +1413,8 @@ function secondsNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExt
     return dateTimeSeed;
 }
 
-function addSeconds(dateTimeSeed: DateTimeSeed, seconds: number): DateTimeSeed {
+export function addSeconds(dateTimeSeed: DateTimeSeed, seconds: number): DateTimeSeed {
+    if (seconds === 0) return dateTimeSeed;
     // if (seconds > 0) {
     //     const {value, n} = modulo(seconds, MINUTE_IN_SECONDS);
     //     for (let i = 0; i < n; i++) {
@@ -1409,15 +1427,13 @@ function addSeconds(dateTimeSeed: DateTimeSeed, seconds: number): DateTimeSeed {
     //     }
     // }
     while (seconds > 0) {
-        const yearDays = getYearDays(dateTimeSeed.years);
-        const yearSeconds = yearDays * DAY_IN_SECONDS;
+        const yearSeconds = getYearSeconds(dateTimeSeed.years);
         if (seconds < yearSeconds) break;
         yearsNext(dateTimeSeed);
         seconds -= yearSeconds;
     }
     while (seconds > 0) {
-        const monthDays = getMonthDays(dateTimeSeed.years, dateTimeSeed.months);
-        const monthSeconds = monthDays * DAY_IN_SECONDS;
+        const monthSeconds = getMonthSeconds(dateTimeSeed.years, dateTimeSeed.months);
         if (seconds < monthSeconds) break;
         monthsNext(dateTimeSeed);
         seconds -= monthSeconds;
@@ -1457,16 +1473,14 @@ function addSeconds(dateTimeSeed: DateTimeSeed, seconds: number): DateTimeSeed {
     // }
     while (seconds < 0) {
         const dateTimeX = yearsPrev(dateTimeSeed.copy());
-        const yearDays = getYearDays(dateTimeX.years);
-        const yearSeconds = yearDays * DAY_IN_SECONDS;
+        const yearSeconds = getYearSeconds(dateTimeX.years);
         if (seconds > -yearSeconds) break;
         dateTimeSeed.assign(dateTimeX);
         seconds += yearSeconds;
     }
     while (seconds < 0) {
         const dateTimeX = monthsPrev(dateTimeSeed.copy());
-        const monthDays = getMonthDays(dateTimeX.years, dateTimeX.months);
-        const monthSeconds = monthDays * DAY_IN_SECONDS;
+        const monthSeconds = getMonthSeconds(dateTimeX.years, dateTimeX.months);
         if (seconds > -monthSeconds) break;
         dateTimeSeed.assign(dateTimeX);
         seconds += monthSeconds;
@@ -1523,6 +1537,7 @@ function msPrev(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boolean =
 }
 
 function msNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended): DateTimeSeed {
+    if (dateTimeSeed.timestampExtended.equals(timestampExtended)) return dateTimeSeed;
     // sum ms
     while (dateTimeSeed.timestampExtended.ms < timestampExtended.ms) {
         const dateTimeX = msNext(dateTimeSeed.copy());
@@ -1538,7 +1553,8 @@ function msNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended
     return dateTimeSeed;
 }
 
-function addMs(dateTimeSeed: DateTimeSeed, ms: number): DateTimeSeed {
+export function addMs(dateTimeSeed: DateTimeSeed, ms: number): DateTimeSeed {
+    if (ms === 0) return dateTimeSeed;
     // if (ms > 0) {
     //     const {value, n} = modulo(ms, SECOND_IN_MILLISECONDS);
     //     for (let i = 0; i < n; i++) {
@@ -1551,15 +1567,13 @@ function addMs(dateTimeSeed: DateTimeSeed, ms: number): DateTimeSeed {
     //     }
     // }
     while (ms > 0) {
-        const yearDays = getYearDays(dateTimeSeed.years);
-        const yearMs = yearDays * DAY_IN_MILLISECONDS;
+        const yearMs = getYearMs(dateTimeSeed.years);
         if (ms < yearMs) break;
         yearsNext(dateTimeSeed);
         ms -= yearMs;
     }
     while (ms > 0) {
-        const monthDays = getMonthDays(dateTimeSeed.years, dateTimeSeed.months);
-        const monthMs = monthDays * DAY_IN_MILLISECONDS;
+        const monthMs = getMonthMs(dateTimeSeed.years, dateTimeSeed.months);
         if (ms < monthMs) break;
         monthsNext(dateTimeSeed);
         ms -= monthMs;
@@ -1605,16 +1619,14 @@ function addMs(dateTimeSeed: DateTimeSeed, ms: number): DateTimeSeed {
     // }
     while (ms < 0) {
         const dateTimeX = yearsPrev(dateTimeSeed.copy());
-        const yearDays = getYearDays(dateTimeX.years);
-        const yearMs = yearDays * DAY_IN_MILLISECONDS;
+        const yearMs = getYearMs(dateTimeX.years);
         if (ms > -yearMs) break;
         dateTimeSeed.assign(dateTimeX);
         ms += yearMs;
     }
     while (ms < 0) {
         const dateTimeX = monthsPrev(dateTimeSeed.copy());
-        const monthDays = getMonthDays(dateTimeX.years, dateTimeX.months);
-        const monthMs = monthDays * DAY_IN_MILLISECONDS;
+        const monthMs = getMonthMs(dateTimeX.years, dateTimeX.months);;
         if (ms > -monthMs) break;
         dateTimeSeed.assign(dateTimeX);
         ms += monthMs;
@@ -1683,6 +1695,7 @@ function usPrev(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boolean =
 }
 
 function usNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended): DateTimeSeed {
+    if (dateTimeSeed.timestampExtended.equals(timestampExtended)) return dateTimeSeed;
     // sum us
     while (dateTimeSeed.timestampExtended.ns < timestampExtended.ns) {
         const dateTimeX = usNext(dateTimeSeed.copy());
@@ -1698,28 +1711,123 @@ function usNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended
     return dateTimeSeed;
 }
 
-function addUs(dateTimeSeed: DateTimeSeed, us: number): DateTimeSeed {
-    if (us > 0) {
-        const {value, n} = modulo(us, MILLISECOND_IN_MICROSECONDS);
-        for (let i = 0; i < n; i++) {
-            msNext(dateTimeSeed);
-        }
-        let k = value;
-        while (k > 0) {
-            usNext(dateTimeSeed);
-            k -= 1;
-        }
+export function addUs(dateTimeSeed: DateTimeSeed, us: number): DateTimeSeed {
+    if (us === 0) return dateTimeSeed;
+    // if (us > 0) {
+    //     const {value, n} = modulo(us, MILLISECOND_IN_MICROSECONDS);
+    //     for (let i = 0; i < n; i++) {
+    //         msNext(dateTimeSeed);
+    //     }
+    //     let k = value;
+    //     while (k > 0) {
+    //         usNext(dateTimeSeed);
+    //         k -= 1;
+    //     }
+    // }
+    while (us > 0) {
+        const yearUs = getYearUs(dateTimeSeed.years);
+        if (us < yearUs) break;
+        yearsNext(dateTimeSeed);
+        us -= yearUs;
     }
-    if (us < 0) {
-        const {value, n} = modulo(us, MILLISECOND_IN_MICROSECONDS);
-        for (let j = n; j < 0; j++) {
-            msPrev(dateTimeSeed);
-        }
-        let k = value > 0 ? value - MILLISECOND_IN_MICROSECONDS : 0;
-        while (k < 0) {
-            usPrev(dateTimeSeed);
-            k += 1;
-        }
+    while (us > 0) {
+        const monthUs = getMonthUs(dateTimeSeed.years, dateTimeSeed.months);
+        if (us < monthUs) break;
+        monthsNext(dateTimeSeed);
+        us -= monthUs;
+    }
+    while (us > 0) {
+        const dayUs = DAY_IN_MICROSECONDS;
+        if (us < dayUs) break;
+        daysNext(dateTimeSeed);
+        us -= dayUs;
+    }
+    while (us > 0) {
+        const hourUs = HOUR_IN_MICROSECONDS;
+        if (us < hourUs) break;
+        hoursNext(dateTimeSeed);
+        us -= hourUs;
+    }
+    while (us > 0) {
+        const minuteUs = MINUTE_IN_MICROSECONDS;
+        if (us < minuteUs) break;
+        minutesNext(dateTimeSeed);
+        us -= minuteUs;
+    }
+    while (us > 0) {
+        const secondUs = SECOND_IN_MICROSECONDS;
+        if (us < secondUs) break;
+        secondsNext(dateTimeSeed);
+        us -= secondUs;
+    }
+    while (us > 0) {
+        const msUs = MILLISECOND_IN_MICROSECONDS;
+        if (us < msUs) break;
+        msNext(dateTimeSeed);
+        us -= msUs;
+    }
+    while (us > 0) {
+        usNext(dateTimeSeed);
+        us -= 1;
+    }
+    // if (us < 0) {
+    //     const {value, n} = modulo(us, MILLISECOND_IN_MICROSECONDS);
+    //     for (let j = n; j < 0; j++) {
+    //         msPrev(dateTimeSeed);
+    //     }
+    //     let k = value > 0 ? value - MILLISECOND_IN_MICROSECONDS : 0;
+    //     while (k < 0) {
+    //         usPrev(dateTimeSeed);
+    //         k += 1;
+    //     }
+    // }
+    while (us < 0) {
+        const dateTimeX = yearsPrev(dateTimeSeed.copy());
+        const yearUs = getYearUs(dateTimeX.years);
+        if (us > -yearUs) break;
+        dateTimeSeed.assign(dateTimeX)
+        us += yearUs;
+    }
+    while (us < 0) {
+        const dateTimeX = monthsPrev(dateTimeSeed.copy());
+        const monthUs = getMonthUs(dateTimeX.years, dateTimeX.months);
+        if (us > -monthUs) break;
+        dateTimeSeed.assign(dateTimeX);
+        us += monthUs;
+    }
+    while (us < 0) {
+        const dayUs = DAY_IN_MICROSECONDS;
+        if (us > -dayUs) break;
+        daysPrev(dateTimeSeed);
+        us += dayUs;
+    }
+    while (us < 0) {
+        const hourUs = HOUR_IN_MICROSECONDS;
+        if (us > -hourUs) break;
+        hoursPrev(dateTimeSeed);
+        us += hourUs;
+    }
+    while (us < 0) {
+        const minuteUs = MINUTE_IN_MICROSECONDS;
+        if (us > -minuteUs) break;
+        minutesPrev(dateTimeSeed);
+        us += minuteUs;
+    }
+    while (us < 0) {
+        const secondUs = SECOND_IN_MICROSECONDS;
+        if (us > -secondUs) break;
+        secondsPrev(dateTimeSeed);
+        us += secondUs;
+    }
+    while (us < 0) {
+        const msUs = MILLISECOND_IN_MICROSECONDS;
+        if (us > -msUs) break;
+        msPrev(dateTimeSeed);
+        us += msUs;
+    }
+    while (us < 0) {
+        usPrev(dateTimeSeed);
+        us += 1;
     }
     return dateTimeSeed;
 }
@@ -1757,6 +1865,7 @@ function nsPrev(dateTimeSeed: DateTimeSeed, updateWeekdayAndTimestamp: boolean =
 }
 
 function nsNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended): DateTimeSeed {
+    if (dateTimeSeed.timestampExtended.equals(timestampExtended)) return dateTimeSeed;
     // sum ns
     while (dateTimeSeed.timestampExtended.ns < timestampExtended.ns) {
         const dateTimeX = nsNext(dateTimeSeed.copy());
@@ -1771,29 +1880,149 @@ function nsNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended
     return dateTimeSeed;
 }
 
-function addNs(dateTimeSeed: DateTimeSeed, ns: number): DateTimeSeed {
-    if (ns > 0) {
-        const {value, n} = modulo(ns, MICROSECOND_IN_NANOSECONDS);
-        for (let i = 0; i < n; i++) {
-            usNext(dateTimeSeed);
-        }
-        let k = value;
-        while (k > 0) {
-            nsNext(dateTimeSeed);
-            k -= 1;
-        }
+export function addNs(dateTimeSeed: DateTimeSeed, ns: number): DateTimeSeed {
+    if (ns === 0) return dateTimeSeed;
+    // if (ns > 0) {
+    //     const {value, n} = modulo(ns, MICROSECOND_IN_NANOSECONDS);
+    //     for (let i = 0; i < n; i++) {
+    //         usNext(dateTimeSeed);
+    //     }
+    //     let k = value;
+    //     while (k > 0) {
+    //         nsNext(dateTimeSeed);
+    //         k -= 1;
+    //     }
+    // }
+    while (ns > 0) {
+        const yearNs = getYearNs(dateTimeSeed.years);
+        if (ns < yearNs) break;
+        yearsNext(dateTimeSeed);
+        ns -= yearNs;
     }
-    if (ns < 0) {
-        const {value, n} = modulo(ns, MICROSECOND_IN_NANOSECONDS);
-        for (let j = n; j < 0; j++) {
-            usPrev(dateTimeSeed);
-        }
-        let k = value > 0 ? value - MICROSECOND_IN_NANOSECONDS : 0;
-        while (k < 0) {
-            nsPrev(dateTimeSeed);
-            k += 1;
-        }
+    while (ns > 0) {
+        const monthNs = getMonthNs(dateTimeSeed.years, dateTimeSeed.months);
+        if (ns < monthNs) break;
+        monthsNext(dateTimeSeed);
+        ns -= monthNs;
     }
+    while (ns > 0) {
+        const dayNs = DAY_IN_NANOSECONDS;
+        if (ns < dayNs) break;
+        daysNext(dateTimeSeed);
+        ns -= dayNs;
+    }
+    while (ns > 0) {
+        const hourNs = HOUR_IN_NANOSECONDS;
+        if (ns < hourNs) break;
+        hoursNext(dateTimeSeed);
+        ns -= hourNs;
+    }
+    while (ns > 0) {
+        const minuteNs = MINUTE_IN_NANOSECONDS;
+        if (ns < minuteNs) break;
+        minutesNext(dateTimeSeed);
+        ns -= minuteNs;
+    }
+    while (ns > 0) {
+        const secondNs = SECOND_IN_NANOSECONDS;
+        if (ns < secondNs) break;
+        secondsNext(dateTimeSeed);
+        ns -= secondNs;
+    }
+    while (ns > 0) {
+        const msNs = MILLISECOND_IN_NANOSECONDS;
+        if (ns < msNs) break;
+        msNext(dateTimeSeed);
+        ns -= msNs;
+    }
+    while (ns > 0) {
+        const usNs = MICROSECOND_IN_NANOSECONDS;
+        if (ns < usNs) break;
+        usNext(dateTimeSeed);
+        ns -= usNs;
+    }
+    while (ns > 0) {
+        nsNext(dateTimeSeed);
+        ns -= 1;
+    }
+    // if (ns < 0) {
+    //     const {value, n} = modulo(ns, MICROSECOND_IN_NANOSECONDS);
+    //     for (let j = n; j < 0; j++) {
+    //         usPrev(dateTimeSeed);
+    //     }
+    //     let k = value > 0 ? value - MICROSECOND_IN_NANOSECONDS : 0;
+    //     while (k < 0) {
+    //         nsPrev(dateTimeSeed);
+    //         k += 1;
+    //     }
+    // }
+    while (ns < 0) {
+        const dateTimeX = yearsPrev(dateTimeSeed.copy());
+        const yearNs = getYearNs(dateTimeX.years);
+        if (ns > -yearNs) break;
+        dateTimeSeed.assign(dateTimeX);
+        ns += yearNs;
+    }
+    while (ns < 0) {
+        const dateTimeX = monthsPrev(dateTimeSeed.copy());
+        const monthNs = getMonthNs(dateTimeX.years, dateTimeX.months);
+        if (ns > -monthNs) break;
+        dateTimeSeed.assign(dateTimeX);
+        ns += monthNs;
+    }
+    while (ns < 0) {
+        const dayNs = DAY_IN_NANOSECONDS;
+        if (ns > -dayNs) break;
+        daysPrev(dateTimeSeed);
+        ns += dayNs;
+    }
+    while (ns < 0) {
+        const hourNs = HOUR_IN_NANOSECONDS;
+        if (ns > -hourNs) break;
+        hoursPrev(dateTimeSeed);
+        ns += hourNs;
+    }
+    while (ns < 0) {
+        const minuteNs = MINUTE_IN_NANOSECONDS;
+        if (ns > -minuteNs) break;
+        minutesPrev(dateTimeSeed);
+        ns += minuteNs;
+    }
+    while (ns < 0) {
+        const secondNs = SECOND_IN_NANOSECONDS;
+        if (ns > -secondNs) break;
+        secondsPrev(dateTimeSeed);
+        ns += secondNs;
+    }
+    while (ns < 0) {
+        const msNs = MILLISECOND_IN_NANOSECONDS;
+        if (ns > -msNs) break;
+        msPrev(dateTimeSeed);
+        ns += msNs;
+    }
+    while (ns < 0) {
+        const usNs = MICROSECOND_IN_NANOSECONDS;
+        if (ns > -usNs) break;
+        usPrev(dateTimeSeed);
+        ns += usNs;
+    }
+    while (ns < 0) {
+        nsPrev(dateTimeSeed);
+        ns += 1;
+    }
+    return dateTimeSeed;
+}
+
+export function dateTimeNear(dateTimeSeed: DateTimeSeed, timestampExtended: TimestampExtended): DateTimeSeed {
+    yearsNear(dateTimeSeed, timestampExtended);
+    monthsNear(dateTimeSeed, timestampExtended);
+    daysNear(dateTimeSeed, timestampExtended);
+    hoursNear(dateTimeSeed, timestampExtended);
+    minutesNear(dateTimeSeed, timestampExtended);
+    secondsNear(dateTimeSeed, timestampExtended);
+    msNear(dateTimeSeed, timestampExtended);
+    usNear(dateTimeSeed, timestampExtended);
+    nsNear(dateTimeSeed, timestampExtended);
     return dateTimeSeed;
 }
 
@@ -1836,16 +2065,7 @@ export function getDateTimeReadOnlyByTimestampExtended(timestampExtended: Timest
     const timeZone = dateTimeSnapShot.dateTimeReadOnly.timeZone;
 
     const dateTimeSeed = createDateTimeSnapShotSeed(dateTimeSnapShot);
-
-    yearsNear(dateTimeSeed, timestampExtended);
-    monthsNear(dateTimeSeed, timestampExtended);
-    daysNear(dateTimeSeed, timestampExtended);
-    hoursNear(dateTimeSeed, timestampExtended);
-    minutesNear(dateTimeSeed, timestampExtended);
-    secondsNear(dateTimeSeed, timestampExtended);
-    msNear(dateTimeSeed, timestampExtended);
-    usNear(dateTimeSeed, timestampExtended);
-    nsNear(dateTimeSeed, timestampExtended);
+    dateTimeNear(dateTimeSeed, timestampExtended);
 
     const years = dateTimeSeed.years;
     const months = dateTimeSeed.months;
@@ -1953,6 +2173,30 @@ export function getYearDays(years: number): number {
     return YEAR_IN_DAYS;
 }
 
+export function getYearHours(years: number): number {
+    return getYearDays(years) * DAY_IN_HOURS;
+}
+
+export function getYearMinutes(years: number): number {
+    return getYearHours(years) * HOUR_IN_MINUTES;
+}
+
+export function getYearSeconds(years: number): number {
+    return getYearMinutes(years) * MINUTE_IN_SECONDS;
+}
+
+export function getYearMs(years: number): number {
+    return getYearSeconds(years) * SECOND_IN_MILLISECONDS;
+}
+
+export function getYearUs(years: number): number {
+    return getYearMs(years) * MILLISECOND_IN_MICROSECONDS;
+}
+
+export function getYearNs(years: number): number {
+    return getYearUs(years) * MICROSECOND_IN_NANOSECONDS;
+}
+
 export function getMonthDays(years: number, months: MonthTyped): number {
     switch (months) {
         case Months.January:
@@ -1972,6 +2216,30 @@ export function getMonthDays(years: number, months: MonthTyped): number {
         default:
             return 30;
     }
+}
+
+export function getMonthHours(years: number, months: MonthTyped): number {
+    return getMonthDays(years, months) * DAY_IN_HOURS;
+}
+
+export function getMonthMinutes(years: number, months: MonthTyped): number {
+    return getMonthHours(years, months) * HOUR_IN_MINUTES;
+}
+
+export function getMonthSeconds(years: number, months: MonthTyped): number {
+    return getMonthMinutes(years, months) * MINUTE_IN_SECONDS;
+}
+
+export function getMonthMs(years: number, months: MonthTyped): number {
+    return getMonthSeconds(years, months) * SECOND_IN_MILLISECONDS;
+}
+
+export function getMonthUs(years: number, months: MonthTyped): number {
+    return getMonthMs(years, months) * MILLISECOND_IN_MICROSECONDS;
+}
+
+export function getMonthNs(years: number, months: MonthTyped): number {
+    return getMonthUs(years, months) * MICROSECOND_IN_NANOSECONDS;
 }
 
 export interface TimestampExtended extends ComparableImpl<TimestampExtended>, EquatableImpl<TimestampExtended> {
@@ -2042,17 +2310,49 @@ export function isTimestampExtended(value: any): value is TimestampExtended {
 }
 
 export interface DateTimeImpl extends ComparableImpl<DateTimeImpl>, EquatableImpl<DateTimeImpl> {
-    years: number;
-    months: number;
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-    ms: number;
-    us: number;
-    ns: number;
-    weekday: WeekdayTyped;
+
+    years: number
+    // get years(): number;
+    // set years(value: number);
+
+    months: number
+    // get months(): number;
+    // set months(value: number);
+
+    days: number
+    // get days(): number;
+    // set days(value: number);
+
+    hours: number
+    // get hours(): number;
+    // set hours(value: number);
+
+    minutes: number
+    // get minutes(): number;
+    // set minutes(value: number);
+
+    seconds: number
+    // get seconds(): number;
+    // set seconds(value: number);
+
+    ms: number
+    // get ms(): number;
+    // set ms(value: number);
+
+    us: number
+    // get us(): number;
+    // set us(value: number);
+
+    ns: number
+    // get ns(): number;
+    // set ns(value: number);
+
+    // readonly
+    get weekday(): WeekdayTyped;
+
+    // TODO: switching timezone synchronized
     timeZone: TimeZoneTyped;
+
     toString(): string;
     toUTC(): DateTimeImpl;
     add(d: TimeSpanImpl): DateTimeImpl;
@@ -2072,8 +2372,12 @@ export class DateTime implements DateTimeImpl {
     public ms: number;
     public us: number;
     public ns: number;
+
+    // readonly
     public weekday: WeekdayTyped;
-    public timeZone: TimeZoneTyped;
+
+    // TODO: switching timezone synchronized
+    public timeZone: TimeZoneTyped; // switch timezone
 
     public constructor(value?: number | string | Date | DateTimeImpl) {
         this.years = 0;
@@ -2086,7 +2390,7 @@ export class DateTime implements DateTimeImpl {
         this.us = 0;
         this.ns = 0;
         this.weekday = Weekdays.Sunday;
-        this.timeZone = TimeZones.Local;
+        this.timeZone = TimeZones.UTC;
 
         if (value === undefined) return;
 
@@ -2169,6 +2473,46 @@ export class DateTime implements DateTimeImpl {
     toUTC(): DateTimeImpl {
         throw new Error("Method not implemented.");
     }
+}
+
+export function isDateTime(value: any): value is DateTimeImpl {
+    const props: Record<keyof DateTimeImpl, string> = {
+        years: "number",
+        months: "number",
+        days: "number",
+        hours: "number",
+        minutes: "number",
+        seconds: "number",
+        ms: "number",
+        us: "number",
+        ns: "number",
+        weekday: "object",
+        timeZone: "object",
+        toString: "function",
+        toUTC: "function",
+        add: "function",
+        subtract: "function",
+        after: "function",
+        before: "function",
+        parse: "function",
+        compareTo: "function",
+        equals: "function",
+    };
+    for (const [prop, kind] of Object.entries(props)) {
+        // const kind = props[prop as keyof DateTimeImpl];
+        switch (prop) {
+            case "weekday":
+                if (hasOwnPropertyName(value, prop) && typeof value[prop] === kind && isWeekdayTyped(value[prop])) continue;
+                return false;
+            case "timeZone":
+                if (hasOwnPropertyName(value, prop) && typeof value[prop] === kind && isTimeZoneTyped(value[prop])) continue;
+                return false;
+            default:
+                if (hasOwnPropertyName(value, prop) && typeof value[prop] === kind) continue;
+                return false;
+        }
+    }
+    return true;
 }
 
 function main() {
